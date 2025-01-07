@@ -206,3 +206,118 @@ if (bytes_sent < 0) {
 ", bytes_sent);
 }
 ```
+
+# **Client:**
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "ffsys/socket.h"
+
+int main() {
+    // Inicializar los sockets
+    if (ffsockinit(FFSOCKINIT_SIGPIPE) != 0) {
+        fprintf(stderr, "Error al inicializar los sockets\n");
+        return 1;
+    }
+
+    // Crear el socket
+    ffsock client_socket = ffsockcreatetcp(AF_INET, 0);
+    if (client_socket == FFSOCK_NULL) {
+        fprintf(stderr, "Error al crear el socket\n");
+        return 1;
+    }
+
+    // Establecer la dirección del servidor
+    ffsockaddr server_addr = {};
+    ffsockaddrsetipv4(&server_addr, "127.0.0.1", 6660);
+
+    // Conectar al servidor
+    if (ffsock_connect(client_socket, &server_addr) != 0) {
+        fprintf(stderr, "Error al conectar al servidor\n");
+        ffsock_close(client_socket);
+        return 1;
+    }
+
+    printf("Conectado al servidor 127.0.0.1:6660\n");
+
+    // Enviar y recibir datos a través del socket
+    // ...
+
+    // Cerrar el socket
+    ffsock_close(client_socket);
+
+    return 0;
+}
+```
+
+# **Server:**
+
+```c
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "ffsys/socket.h"
+
+int main() {
+    // Inicializar los sockets
+    if (ffsockinit(FFSOCKINIT_SIGPIPE) != 0) {
+        fprintf(stderr, "Error al inicializar los sockets\n");
+        return 1;
+    }
+
+    // Crear el socket de escucha
+    ffsock listen_socket = ffsockcreatetcp(AF_INET, 0);
+    if (listen_socket == FFSOCK_NULL) {
+        fprintf(stderr, "Error al crear el socket de escucha\n");
+        return 1;
+    }
+
+    // Establecer la dirección del servidor
+    ffsockaddr server_addr = {};
+    ffsockaddrsetipv4(&server_addr, "127.0.0.1", 6660);
+
+    // Vincular el socket a la dirección del servidor
+    if (ffsock_bind(listen_socket, &server_addr) != 0) {
+        fprintf(stderr, "Error al vincular el socket\n");
+        ffsock_close(listen_socket);
+        return 1;
+    }
+
+    // Escuchar conexiones entrantes
+    if (ffsocklisten(listen_socket, SOMAXCONN) != 0) {
+        fprintf(stderr, "Error al escuchar conexiones\n");
+        ffsock_close(listen_socket);
+        return 1;
+    }
+
+    printf("Servidor escuchando en 127.0.0.1:6660\n");
+
+    // Aceptar conexiones entrantes
+    while (1) {
+        ffsockaddr client_addr = {};
+        ffsock client_socket = ffsockaccept(listen_socket, &client_addr, 0);
+        if (client_socket != FFSOCK_NULL) {
+            printf("Conexión entrante desde %s:%u\n",
+                   ffsockaddripport(&client_addr, NULL).buf,
+                   ffsockaddripport(&client_addr, NULL).len);
+
+            // Procesar la conexión
+            // ...
+
+            ffsock_close(client_socket);
+        }
+    }
+
+    // Cerrar el socket de escucha
+    ffsock_close(listen_socket);
+
+    return 0;
+```
+
+    return 0;
+}
+```
