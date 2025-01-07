@@ -207,7 +207,9 @@ if (bytes_sent < 0) {
 }
 ```
 
-# **Client:**
+---
+
+# 📤 **Client:**
 
 ```c
 #include <stdio.h>
@@ -253,7 +255,9 @@ int main() {
 }
 ```
 
-# **Server:**
+---
+
+# 📥 **Server:**
 
 ```c
 #include <stdio.h>
